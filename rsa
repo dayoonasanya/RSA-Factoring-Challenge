@@ -1,46 +1,48 @@
-#!/usr/bin/python3
-from sys import argv
-import math
-"""gets the first two factors of any number"""
+#!/usr/bin/env bash
 
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
-def is_prime(num):
-    """checks if a number is prime"""
-    i = 3
-    if num % 2 == 0:
-        return False
-    while i * i <= num:
-        if num % i == 0:
-            return False
-        i += 2
-    return True
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
 
-def factory(num):
-    """This factor function gets the factors of a number & prints them out"""
-    if num % 2 == 0:
-        i = 2
-        print("{}={}*{}".format(num, int(num/i), i))
-    else:
-        sq = math.sqrt(num)
-        if sq % 1 == 0:
-            print("{}={}*{}".format(num, sq, int(num/sq)))
-            return
-        sq = int(sq) + 1
-        for i in range(3, sq, +2):
-            if num % i == 0:
-                if is_prime(i):
-                    print("{}={}*{}".format(num, int(num/i), i))
-                    return
+        echo "$num$num1*$num2"
+}
 
+if [ $# -ne 1 ]
+then
+        echo 'Usage: rsa <file>'
+        exit 1
+else
 
-def factors(filename):
-    """read_file"""
-    with open(filename, encoding="utf-8") as my_file:
-        for i in my_file.readlines():
-            n = int(i)
-            result = factory(n)
+        while read i
+        do
 
+                result=$(factor "$i")
+                check_factor $result
 
-if __name__ == "__main__":
-    factors(argv[1])
+        done < "$1"
+fi
