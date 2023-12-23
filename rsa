@@ -42,5 +42,5 @@ def factors(filename):
             result = factory(n)
 
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     factors(argv[1])
