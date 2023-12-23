@@ -1,36 +1,60 @@
 #!/usr/bin/python3
+
 from sys import argv
 import math
-"""Factorize as many numbers as possible into a product of 2 smaller nums"""
+import random
 
+def is_prime(num):
+    if num < 2:
+        return False
+    for i in range(2, int(math.sqrt(num)) + 1):
+        if num % i == 0:
+            return False
+    return True
 
-def factory(num):
-    """gets the factors of a number"""
-    if num % 2 == 0:
-        i = 2
-        print("{}={}*{}".format(num, int(num//i), i))
-    else:
-        sq = int(math.sqrt(num)) + 1
-        for i in range(3, sq, +2):
-            if num % i == 0:
-                print("{}={}*{}".format(num, int(num//i), i))
-                return
-            if num % (sq + i) == 0:
-                print("{}={}*{}".format(num, sq + i, int(num//(sq + i))))
-                return
-            if num % (sq - i) == 0:
-                print("{}={}*{}".format(num, sq - 1, int(num//(sq - i))))
-                return
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
 
+def pollards_rho(n):
+    x = random.randint(1, n - 1)
+    y = x
+    d = 1
+    f = lambda x: (x**2 + 1) % n
 
-def factors(filename):
-    """read_file and prints them out"""
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = gcd(abs(x - y), n)
 
-    with open(filename, encoding="utf-8") as my_file:
-        for i in my_file.readlines():
-            n = int(i)
-            result = factory(n)
+    return d, n // d
 
+def factorize(number):
+    if number < 2:
+        return None  # Cannot factorize numbers less than 2
+
+    if is_prime(number):
+        return None  # Cannot factorize a prime number
+
+    for i in range(2, int(math.sqrt(number)) + 1):
+        if number % i == 0 and is_prime(i):
+            return i, number // i
+
+    return pollards_rho(number)
 
 if __name__ == "__main__":
-    factors(argv[1])
+    if len(argv) != 2:
+        print("Usage: ./factors <file>")
+        exit(1)
+
+    filename = argv[1]
+
+    with open(filename, 'r') as file:
+        for line in file:
+            number = int(line.strip())
+            factors = factorize(number)
+            if factors:
+                print(f"{number}={factors[0]}*{factors[1]}")
+            else:
+                print(f"{number} is prime and cannot be factorized")
